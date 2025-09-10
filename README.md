@@ -25,3 +25,46 @@
 - усреднённые логиты (для функции потерь).  
 
 Ансамбль повышает устойчивость к ошибкам отдельных моделей и позволяет лучше оценивать надёжность предсказаний.
+
+## Формат входных данных
+
+Модель работает с изображениями.  
+
+- **Тип данных**: RGB-изображения.  
+- **Размер**: `224 × 224` пикселей (каждое изображение приводится к этому размеру при предобработке).  
+- **Формат тензора**: `FloatTensor` размерности `[B, 3, 224, 224]`,  
+  где  
+  - `B` — размер batch (число изображений в пакете),  
+  - `3` — количество каналов (RGB),  
+  - `224 × 224` — пространственные размеры.  
+- **Нормализация**: значения пикселей приводятся к диапазону `[0, 1]` и стандартизируются  
+  (по умолчанию используются mean/std из ImageNet).
+
+## Пример использования
+
+```python
+import torch
+from PIL import Image
+from torchvision import transforms
+from model import EnsembleModel  # импорт твоей модели
+
+# 1. Загружаем изображение
+image = Image.open("example.jpg").convert("RGB")
+
+# 2. Преобразования (resize + тензор + нормализация)
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],  # стандартные ImageNet mean
+        std=[0.229, 0.224, 0.225]    # стандартные ImageNet std
+    )
+])
+x = transform(image).unsqueeze(0)   # размер [1, 3, 224, 224]
+
+# 3. Прогон через модель
+model = EnsembleModel(num_classes=5)
+logits_stack, probs_stack, avg_probs, std_probs, avg_logits = model(x)
+
+print("Форма входа:", x.shape)           # torch.Size([1, 3, 224, 224])
+print("Форма выходных вероятностей:", avg_probs.shape)  # torch.Size([1, 5])
