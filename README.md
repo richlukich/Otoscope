@@ -8,8 +8,8 @@
 
 ```bash
 # 1) создать и активировать окружение (Python 3.12 ок)
-python3.12 -m venv .venv
-source .venv/bin/activate
+python3.12 -m venv otoscope
+source otoscope/bin/activate
 
 # 2) обновить pip
 pip install --upgrade pip
@@ -143,3 +143,35 @@ print("Форма выходных вероятностей:", avg_probs.shape) 
 - **Ансамбль** сглаживает ошибки отдельных архитектур и выдаёт устойчивый прогноз; `std_probs` даёт бесплатную оценку надёжности.
 - **BCEWithLogits + pos_weight** — естественный выбор для multi-label; альтернативы (Focal/Mixed) полезны при сильном дисбалансе или доминировании лёгких примеров.
 - **Жёсткий общий порог 0.5** — базовый старт, но **класс-специфичная калибровка порогов** обычно добавляет ощутимый прирост клинической полезности.
+
+## Инференс
+
+Инференс выполняется с помощью скрипта `inference/inference_test.py`.  
+Он прогоняет модель по директории с изображениями, сравнивает с GT-таблицей и сохраняет предсказания и метрики.
+
+### Формат входных данных
+- **Изображения**: RGB, имена файлов совпадают с `study_id` в GT-таблице.  
+- **GT-таблица**: CSV или Excel с колонками: study_id, NORM, OP, ONP, CI, OTH
+где значения `0/1` указывают на отсутствие или наличие класса:
+- `NORM` — норма  
+- `OP` — острый гнойный отит  
+- `ONP` — острый негнойный отит  
+- `CI` — серная пробка  
+- `OTH` — другие патологии
+### Запуск
+```bash
+python inference_test.py \
+--images_dir /path/to/Уши \
+--gt_csv /path/to/gt_converted_test.csv \
+--weights /path/to/best_ensemble_model33.pth \
+--out_preds_csv "outputs/preds.csv" \
+--metrics_csv "outputs/metrics.csv" \
+--auto_tune_otitis \
+--r_min 0.80 \
+--p_min 0.80 \
+--norm_veto_th 0.90 \
+--sulfur_veto_th 0.85 \
+--ng_margin 0.10 \
+--device cuda:0 \
+--batch_size 1
+```
