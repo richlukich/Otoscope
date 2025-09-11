@@ -229,4 +229,26 @@ OTH,0.500,0.509,0.643,0.923,0.568,0.892
 | ONP *(tuned)*| 0.814 | 0.838 | 0.958 | 0.826 | 0.937 | 0.208 |
 | CI          | 0.879 | 0.967 | 0.989 | 0.921 | 0.987 | 0.500 |
 | OTH         | 0.509 | 0.643 | 0.923 | 0.568 | 0.892 | 0.500 |
-  
+
+
+## Диаграммы и описания
+### Диаграмма компонентов
+Картинка
+### Таблица компонентов
+
+
+| Компонент | Назначение | Комментарий |
+| --- | --- | --- |
+| `train/model.py::EnsembleModel` | Ансамблевая модель на базе `timm`-бэкбонов; агрегирует логиты/вероятности нескольких моделей. | В проекте активен `beit3_large_patch16_224`; `multi_label=True`; выход из `forward`: `logits_stack`, `probs_stack`, `avg_probs`, `std_probs`, `avg_logits`. Есть `infer_json()` для JSON-ответа. |
+| `train/dataloader.py::EarDataset` | Готовит данные из Excel: строит one-hot по столбцам, фильтрует плохое качество, читает изображения. | Классы: `["норма","отит гнойный","отит негнойный","серная пробка","другие"]`. Возвращает `(image, label)`. |
+| `train/train.py` | Цикл обучения, валидирование и сохранение лучших весов. | Лосс `BCEWithLogitsLoss` с `pos_weight`; оптимизатор `AdamW`; метрики Precision/Recall/F1/Specificity/Accuracy; сохранение в `weights6/`. |
+| `inference/model.py::EnsembleModel` | Та же модель для инференса. | Загрузка весов из `.pth`; используется усреднение логитов + `sigmoid`. |
+| `inference/inference_test.py::DirByListDataset` | Загружает картинки по списку `study_id` из GT-CSV. | Ищет точное имя, а при несовпадении — по `stem.*`. |
+| `inference/inference_test.py` | Полный конвейер инференса по директории + расчёт метрик и сохранение CSV. | Тюнинг порогов для `OP/ONP`; пост-процесс «вето» (`NORM`, `CI`) и приоритет `ONP>OP`; сохранение `preds.csv` и `metrics.csv`. |
+| `torchvision.transforms (train/val)` | Предобработка и аугментации. | Train: Resize, Flip, Rotation, ColorJitter, Blur, RandomErasing, Normalize. Val: Resize, Normalize. |
+| `sklearn.metrics` | Подсчёт метрик. | `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `accuracy_score`. |
+
+
+
+
+
