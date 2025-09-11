@@ -188,10 +188,15 @@ python inference_test.py \
 ### Формат предсказаний
 CSV (`out_preds_csv`) имеет вид:
 study_id,norm,op,onp,ci,oth
+
 IMG_001.jpg,1,0,0,0,0
+
 IMG_002.jpg,0,1,0,0,0
+
 IMG_003.jpg,0,0,1,0,0
+
 IMG_004.jpg,0,0,0,1,0
+
 ### Формат метрик
 CSV (`metrics_csv`) содержит:
 class,threshold,precision,recall,specificity,f1,accuracy
