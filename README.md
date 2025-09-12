@@ -7,8 +7,8 @@
 ## Установка
 
 ```bash
-# 1) создать и активировать окружение (Python 3.12 ок)
-python3.12 -m venv otoscope
+# 1) создать и активировать окружение 
+python3 -m venv otoscope
 source otoscope/bin/activate
 
 # 2) обновить pip
